@@ -40,7 +40,7 @@ func (cli *tcpPacketClient) run(wg *sync.WaitGroup) {
 				return
 			}
 			cli.count++
-			if cli.count >= cli.limit {
+			if cli.limit > 0 && cli.count >= cli.limit {
 				return
 			}
 		}
@@ -63,6 +63,19 @@ func TestTcpPacketClientMulti(t *testing.T) {
 	wg.Add(1000)
 	for i := uint64(1); i <= 1000; i++ {
 		client, err := NewTcpPacketClient(i, "127.0.0.1:8080", 1000)
+		if err != nil {
+			panic(err)
+		}
+		go client.run(&wg)
+	}
+	wg.Wait()
+}
+
+func TestTcpPacketClientMultiNotLimit(t *testing.T) {
+	wg := sync.WaitGroup{}
+	wg.Add(1000)
+	for i := uint64(1); i <= 1000; i++ {
+		client, err := NewTcpPacketClient(i, "127.0.0.1:8080", 0)
 		if err != nil {
 			panic(err)
 		}
@@ -94,4 +107,8 @@ func TestTcpPacketServer(t *testing.T) {
 		t.Fatal(err)
 	}
 	time.Sleep(50 * time.Second)
+	err = server.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
 }
