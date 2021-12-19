@@ -6,7 +6,7 @@ import (
 )
 
 type SimpleObj struct {
-	logger logger
+	logger Logger
 }
 
 func NewTestObj() *SimpleObj {
@@ -22,7 +22,7 @@ func TestLogger(t *testing.T) {
 }
 
 type advancedObj struct {
-	logger     logger
+	logger     Logger
 	detailOpen bool
 }
 

@@ -1,5 +1,5 @@
 package simpleLogger
 
-type logger interface {
+type Logger interface {
 	Logf(string, ...interface{})
 }
