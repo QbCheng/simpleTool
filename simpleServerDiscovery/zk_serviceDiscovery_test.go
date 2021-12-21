@@ -178,7 +178,7 @@ func ExampleReconnectEndpoint() {
 
 }
 
-// ExampleNormalStartupNode
+// ExampleWithRootPath
 func ExampleWithRootPath() {
 	rootPath := "/customRootPath"
 	endpointData := []struct {

@@ -16,7 +16,7 @@ const (
 	defaultHeartbeatTimeout = time.Second * 30
 	defaultRootPath         = "/simpleServerDiscovery/dynamicInstance"
 
-	logPre = "[serviceDiscovery] [endpointId : %s] "
+	logPre = "[zkServiceDiscovery] [endpointId : %s] "
 )
 
 type cb func() error
@@ -26,58 +26,58 @@ type event struct {
 	f     cb
 }
 
-type Option func(*serviceDiscovery)
+type Option func(*zkServiceDiscovery)
 
 // WithOpenDetailInfo 开启 go-zookeeper 所有日志信息. false 只开启错误日志
 func WithOpenDetailInfo(openAll bool) Option {
-	return func(sd *serviceDiscovery) {
+	return func(sd *zkServiceDiscovery) {
 		sd.zkLoggerAllOpen = openAll
 	}
 }
 
 // WithLogger 指定日志
 func WithLogger(logger zk.Logger) Option {
-	return func(sd *serviceDiscovery) {
+	return func(sd *zkServiceDiscovery) {
 		sd.logger = logger
 	}
 }
 
 // WithContext 指定上下文
 func WithContext(ctx context.Context) Option {
-	return func(sd *serviceDiscovery) {
+	return func(sd *zkServiceDiscovery) {
 		sd.ctx = ctx
 	}
 }
 
 // WithHeartbeatTimeout 指定心跳
 func WithHeartbeatTimeout(heartbeatTimeout time.Duration) Option {
-	return func(sd *serviceDiscovery) {
+	return func(sd *zkServiceDiscovery) {
 		sd.heartbeatTimeout = heartbeatTimeout
 	}
 }
 
 // WithEndpointEventNotify 接收事件通知
 func WithEndpointEventNotify(nodeEventNotify bool) Option {
-	return func(sd *serviceDiscovery) {
+	return func(sd *zkServiceDiscovery) {
 		sd.nodeEventNotify = nodeEventNotify
 	}
 }
 
 // WithNodeContent 设置节点内容
 func WithNodeContent(content string) Option {
-	return func(sd *serviceDiscovery) {
+	return func(sd *zkServiceDiscovery) {
 		sd.nodeContent = content
 	}
 }
 
-// WithRootPath 设置根地址
+// WithRootPath 设置 zookeeper 中 serverDiscovery 根地址
 func WithRootPath(rootPath string) Option {
-	return func(sd *serviceDiscovery) {
+	return func(sd *zkServiceDiscovery) {
 		sd.rootPath = rootPath
 	}
 }
 
-type serviceDiscovery struct {
+type zkServiceDiscovery struct {
 	conn      *zk.Conn
 	eventChan <-chan zk.Event // zk 内部事件接收通道
 
@@ -101,7 +101,7 @@ type serviceDiscovery struct {
 }
 
 func NewServiceDiscovery(url []string, endpointId string, opts ...Option) (ServiceDiscovery, error) {
-	c := &serviceDiscovery{
+	c := &zkServiceDiscovery{
 		connUrl:          url,
 		heartbeatTimeout: defaultHeartbeatTimeout,
 		events:           make(map[zk.EventType]map[string][]*event),
@@ -147,21 +147,21 @@ func NewServiceDiscovery(url []string, endpointId string, opts ...Option) (Servi
 	return c, nil
 }
 
-func (s *serviceDiscovery) printf(err bool, layout string, str ...interface{}) {
+func (s *zkServiceDiscovery) printf(err bool, layout string, str ...interface{}) {
 	if s.zkLoggerAllOpen || err {
 		s.logger.Printf(logPre+layout, append([]interface{}{s.endpointId}, str...)...)
 	}
 }
 
-func (s *serviceDiscovery) error(layout string, str ...interface{}) {
+func (s *zkServiceDiscovery) error(layout string, str ...interface{}) {
 	s.printf(true, layout, str...)
 }
 
-func (s *serviceDiscovery) info(layout string, str ...interface{}) {
+func (s *zkServiceDiscovery) info(layout string, str ...interface{}) {
 	s.printf(false, layout, str...)
 }
 
-func (s *serviceDiscovery) monitor(eventChan <-chan zk.Event) {
+func (s *zkServiceDiscovery) monitor(eventChan <-chan zk.Event) {
 	for {
 		select {
 		case event, ok := <-eventChan: // ZooKeeper连接事件
@@ -195,7 +195,7 @@ func (s *serviceDiscovery) monitor(eventChan <-chan zk.Event) {
 }
 
 // 注册一个事件
-func (s *serviceDiscovery) register(e *event) bool {
+func (s *zkServiceDiscovery) register(e *event) bool {
 	s.eventsLock.Lock()
 	defer s.eventsLock.Unlock()
 	if s.events[e.event.Type] == nil {
@@ -206,7 +206,7 @@ func (s *serviceDiscovery) register(e *event) bool {
 }
 
 // 事件分发
-func (s *serviceDiscovery) handler(e zk.Event) {
+func (s *zkServiceDiscovery) handler(e zk.Event) {
 	if len(s.events) <= 0 {
 		return
 	}
@@ -222,7 +222,7 @@ func (s *serviceDiscovery) handler(e zk.Event) {
 }
 
 // advancedCreate 能对传入的 zk path 进行层级创建
-func (s *serviceDiscovery) advancedCreate(path string, flags int32, acl []zk.ACL) error {
+func (s *zkServiceDiscovery) advancedCreate(path string, flags int32, acl []zk.ACL) error {
 	t := strings.Trim(path, "/")
 	tArr := strings.Split(t, "/")
 
@@ -242,7 +242,7 @@ func (s *serviceDiscovery) advancedCreate(path string, flags int32, acl []zk.ACL
 }
 
 // 连接成功, 进行初始化
-func (s *serviceDiscovery) connectSucceedEvent() error {
+func (s *zkServiceDiscovery) connectSucceedEvent() error {
 	err := s.registerSelf()
 	if err != nil {
 		return err
@@ -254,7 +254,7 @@ func (s *serviceDiscovery) connectSucceedEvent() error {
 	return nil
 }
 
-func (s *serviceDiscovery) registerSelf() error {
+func (s *zkServiceDiscovery) registerSelf() error {
 	selfZkPath := s.rootPath + "/" + s.endpointId + "|FlagSequence|"
 	var content []byte
 	if s.nodeContent != "" {
@@ -268,7 +268,7 @@ func (s *serviceDiscovery) registerSelf() error {
 }
 
 // 触发后. 重新注册事件
-func (s *serviceDiscovery) triggerAfterRegisterRefreshNodeEvent() error {
+func (s *zkServiceDiscovery) triggerAfterRegisterRefreshNodeEvent() error {
 	// 重新拉取全部 节点
 	dynamicChildren, _, _, err := s.conn.ChildrenW(s.rootPath)
 	if err != nil {
@@ -280,7 +280,7 @@ func (s *serviceDiscovery) triggerAfterRegisterRefreshNodeEvent() error {
 }
 
 // 刷新在线服务.
-func (s *serviceDiscovery) refreshNode(dynamicChildren []string) {
+func (s *zkServiceDiscovery) refreshNode(dynamicChildren []string) {
 	s.endpointsLock.Lock()
 	defer s.endpointsLock.Unlock()
 
@@ -342,11 +342,11 @@ func (s *serviceDiscovery) refreshNode(dynamicChildren []string) {
 
 }
 
-func (s *serviceDiscovery) NodeEvent() <-chan []EndpointEvent {
+func (s *zkServiceDiscovery) NodeEvent() <-chan []EndpointEvent {
 	return s.nodeEventChan
 }
 
-func (s *serviceDiscovery) Close() {
+func (s *zkServiceDiscovery) Close() {
 	s.eventsLock.Lock()
 	defer s.eventsLock.Unlock()
 	// 关闭连接
