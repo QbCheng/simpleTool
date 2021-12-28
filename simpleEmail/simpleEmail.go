@@ -29,35 +29,35 @@ var (
 )
 
 const (
-	defaultToMaxNumber = 10 // 默认最大同时收件人为10.
-	defaultCcMaxNumber = 10 // 默认最大同时抄收为10.
+	defaultToMaxNumber = 10 // defaultToMaxNumber 默认最大同时收件人为10.
+	defaultCcMaxNumber = 10 // defaultCcMaxNumber 默认最大同时抄收为10.
 )
 
-type Option func(log *EmailClient)
+type Option func(log *emailClient)
 
 // WithToMaxNumber SMTP 服务一份邮件最大接收人数量. 需要根据具体 SMTP 服务 来进行设置
 func WithToMaxNumber(toMaxNumber int) Option {
-	return func(emailClient *EmailClient) {
+	return func(emailClient *emailClient) {
 		emailClient.toMaxNumber = toMaxNumber
 	}
 }
 
 // WithCcMaxNumber SMTP 服务一份邮件最大抄手人数量. 需要根据具体 SMTP 服务 来进行设置
 func WithCcMaxNumber(ccMaxNumber int) Option {
-	return func(emailClient *EmailClient) {
+	return func(emailClient *emailClient) {
 		emailClient.ccMaxNumber = ccMaxNumber
 	}
 }
 
-// WithSkipTls 表示跳过 tls 效验. 生产环境下不允许使用
-func WithSkipTls(tlsConfig *tls.Config) Option {
-	return func(emailClient *EmailClient) {
+// WithTls 生产环境下必须设置, 否则不安全
+func WithTls(tlsConfig *tls.Config) Option {
+	return func(emailClient *emailClient) {
 		emailClient.tls = tlsConfig
 	}
 }
 
 // EmailClient 发送客户端
-type EmailClient struct {
+type emailClient struct {
 	host     string
 	port     int
 	username string
@@ -74,8 +74,8 @@ type EmailClient struct {
 // username 用户名
 // password 密码(或 授权码)
 // port 端口,  常见端口 465 ssl 或 587 非ssl
-func NewEmailClient(host, username, password string, port int, options ...Option) *EmailClient {
-	ret := &EmailClient{
+func NewEmailClient(host, username, password string, port int, options ...Option) *emailClient {
+	ret := &emailClient{
 		host:        host,
 		port:        port,
 		username:    username,
@@ -93,7 +93,7 @@ func NewEmailClient(host, username, password string, port int, options ...Option
 }
 
 // SendMessage 发送邮件
-func (c *EmailClient) SendMessage(email EmailMessage) (bool, error) {
+func (c *emailClient) SendMessage(email EmailMessage) (bool, error) {
 
 	if len(email.To) > c.toMaxNumber {
 		return false, ErrorToTooMany
