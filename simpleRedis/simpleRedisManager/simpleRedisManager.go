@@ -41,28 +41,37 @@ type RedisConf struct {
 	WriteTimeout time.Duration // 写超时
 }
 
+func CreateRedisClient(conf *RedisConf) (*redis.Client, error) {
+	client := redis.NewClient(&redis.Options{
+		Addr:     conf.Addr,
+		DB:       conf.Db,
+		Password: conf.Password,
+
+		PoolSize:     conf.PoolSize,
+		MinIdleConns: conf.MinIdleConnects,
+		IdleTimeout:  conf.IdleTimeout,
+
+		MaxRetries:      conf.MaxRetries,
+		MinRetryBackoff: conf.MinRetryBackoff,
+		MaxRetryBackoff: conf.MaxRetryBackoff,
+
+		DialTimeout:  conf.DialTimeout,
+		ReadTimeout:  conf.ReadTimeout,
+		WriteTimeout: conf.WriteTimeout,
+	})
+	_, err := client.Ping(context.Background()).Result()
+	if err != nil {
+		return nil, ErrorManagerInitializationFailed
+	}
+	return client, err
+}
+
 func (rd *RedisMng) Init(configs []*RedisConf) error {
+	var err error
 	for _, v := range configs {
-		rd.ClientMap[v.Index] = redis.NewClient(&redis.Options{
-			Addr:     v.Addr,
-			DB:       v.Db,
-			Password: v.Password,
-
-			PoolSize:     v.PoolSize,
-			MinIdleConns: v.MinIdleConnects,
-			IdleTimeout:  v.IdleTimeout,
-
-			MaxRetries:      v.MaxRetries,
-			MinRetryBackoff: v.MinRetryBackoff,
-			MaxRetryBackoff: v.MaxRetryBackoff,
-
-			DialTimeout:  v.DialTimeout,
-			ReadTimeout:  v.ReadTimeout,
-			WriteTimeout: v.WriteTimeout,
-		})
-		_, err := rd.ClientMap[v.Index].Ping(context.Background()).Result()
+		rd.ClientMap[v.Index], err = CreateRedisClient(v)
 		if err != nil {
-			return ErrorManagerInitializationFailed
+			return nil
 		}
 	}
 	return nil

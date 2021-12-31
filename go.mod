@@ -3,6 +3,7 @@ module simpleTool
 go 1.16
 
 require (
+	github.com/bsm/redislock v0.7.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-redis/redis/v8 v8.11.4 // indirect
 	github.com/samuel/go-zookeeper v0.0.0-20201211165307-7117e9ea2414
