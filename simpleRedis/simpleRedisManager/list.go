@@ -11,13 +11,12 @@ func (rd *RedisMng) LPop(ctx context.Context, index int, key string) (string, er
 	return r, err
 }
 
-func (rd *RedisMng) RPush(ctx context.Context, index int, key string, value ...interface{}) (int, error) {
+func (rd *RedisMng) RPush(ctx context.Context, index int, key string, value ...interface{}) (int64, error) {
 	conn, err := rd.getConn(index)
 	if err != nil {
 		return 0, err
 	}
-	r, err := conn.RPush(ctx, key, value...).Result()
-	return int(r), err
+	return conn.RPush(ctx, key, value...).Result()
 }
 
 func (rd *RedisMng) LTrim(ctx context.Context, index int, key string, start, end int) (string, error) {
@@ -25,8 +24,7 @@ func (rd *RedisMng) LTrim(ctx context.Context, index int, key string, start, end
 	if err != nil {
 		return "", err
 	}
-	r, err := conn.LTrim(ctx, key, int64(start), int64(end)).Result()
-	return r, err
+	return conn.LTrim(ctx, key, int64(start), int64(end)).Result()
 }
 
 func (rd *RedisMng) LRange(ctx context.Context, index int, key string, start, end int) ([]string, error) {
@@ -34,6 +32,5 @@ func (rd *RedisMng) LRange(ctx context.Context, index int, key string, start, en
 	if err != nil {
 		return nil, err
 	}
-	r, err := conn.LRange(ctx, key, int64(start), int64(end)).Result()
-	return r, err
+	return conn.LRange(ctx, key, int64(start), int64(end)).Result()
 }

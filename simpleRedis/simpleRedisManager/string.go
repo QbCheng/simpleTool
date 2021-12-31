@@ -10,8 +10,7 @@ func (rd *RedisMng) Set(ctx context.Context, index int, key string, value interf
 	if err != nil {
 		return "", err
 	}
-	r, err := conn.Set(ctx, key, value, expiration).Result()
-	return r, err
+	return conn.Set(ctx, key, value, expiration).Result()
 }
 
 func (rd *RedisMng) Get(ctx context.Context, index int, key string) (string, error) {
@@ -19,15 +18,13 @@ func (rd *RedisMng) Get(ctx context.Context, index int, key string) (string, err
 	if err != nil {
 		return "", err
 	}
-	r, err := conn.Get(ctx, key).Result()
-	return r, err
+	return conn.Get(ctx, key).Result()
 }
 
-func (rd *RedisMng) Incr(ctx context.Context, index int, key string) (int, error) {
+func (rd *RedisMng) Incr(ctx context.Context, index int, key string) (int64, error) {
 	conn, err := rd.getConn(index)
 	if err != nil {
 		return 0, err
 	}
-	r, err := conn.Incr(ctx, key).Result()
-	return int(r), err
+	return conn.Incr(ctx, key).Result()
 }
