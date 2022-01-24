@@ -1,21 +1,21 @@
-package simpleRedisLock
+package simpleUniversalClient
 
 import (
 	"context"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
-	"simpleTool/simpleRedis/simpleRedisManager"
+	"simpleTool/simpleRedis/config"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
 )
 
-var TestConfig = simpleRedisManager.RedisConf{
-	Addr:     "192.168.31.202:6379", // Redis地址 ip:端口
-	Password: "",                    // Redis账号
-	Db:       0,                     // Redis库
+var TestConfig = config.RedisConf{
+	Addr:     []string{"192.168.110.230:6379"}, // Redis地址 ip:端口
+	Password: "pass230",                        // Redis账号
+	Db:       0,                                // Redis库
 
 	PoolSize:        10,               // Redis连接池大小
 	MinIdleConnects: 5,                // 最小空闲连接.
@@ -30,16 +30,12 @@ var TestConfig = simpleRedisManager.RedisConf{
 	WriteTimeout: time.Second * 30, // 写超时
 }
 
-func TestDefaultSimpleRedisLock(t *testing.T) {
-	err := DefaultInit(TestConfig)
-	assert.NoError(t, err)
-}
-
 func TestSingle(t *testing.T) {
-	err := DefaultInit(TestConfig)
+
+	commonClient, err := NewRedisMng(&TestConfig, WithOpenRedisLockClient(false))
 	assert.NoError(t, err)
 
-	other, err := simpleRedisManager.CreateRedisClient(&TestConfig)
+	lockClient, err := NewRedisMng(&TestConfig, WithOpenRedisLockClient(true))
 	assert.NoError(t, err)
 
 	var firstData string
@@ -48,7 +44,7 @@ func TestSingle(t *testing.T) {
 	for i := 0; i < 100; i++ {
 		go func() {
 			defer wg.Done()
-			locker, err := ExponentialBackoffObtain(context.Background(), " my-lock", 30*time.Second, "wo is mateData")
+			locker, err := lockClient.ExponentialBackoffObtain(context.Background(), " my-lock", 30*time.Second, "wo is mateData")
 			assert.NoError(t, err)
 			defer func() {
 				err := locker.Release(context.Background())
@@ -57,9 +53,9 @@ func TestSingle(t *testing.T) {
 			fmt.Println(locker.Metadata())
 			if firstData == "" {
 				firstData = strconv.Itoa(rand.Int())
-				other.Set(context.Background(), "firstData", firstData, 0)
+				commonClient.Set(context.Background(), "firstData", firstData, 0)
 			} else {
-				value, err := other.Get(context.Background(), "firstData").Result()
+				value, err := commonClient.Get(context.Background(), "firstData").Result()
 				assert.NoError(t, err)
 				assert.Equal(t, value, firstData)
 			}
@@ -71,10 +67,10 @@ func TestSingle(t *testing.T) {
 var lockKeyFormat = "my-lock:%v"
 
 func TestMulti(t *testing.T) {
-	err := DefaultInit(TestConfig)
+	commonClient, err := NewRedisMng(&TestConfig, WithOpenRedisLockClient(false))
 	assert.NoError(t, err)
 
-	other, err := simpleRedisManager.CreateRedisClient(&TestConfig)
+	lockClient, err := NewRedisMng(&TestConfig, WithOpenRedisLockClient(true))
 	assert.NoError(t, err)
 
 	var firstData1 string
@@ -84,7 +80,7 @@ func TestMulti(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			lock := fmt.Sprintf(lockKeyFormat, 1)
-			locker, err := ExponentialBackoffObtain(context.Background(), lock, 30*time.Second, "wo is mateData")
+			locker, err := lockClient.ExponentialBackoffObtain(context.Background(), lock, 30*time.Second, "wo is mateData")
 			assert.NoError(t, err)
 			defer func() {
 				err := locker.Release(context.Background())
@@ -93,9 +89,9 @@ func TestMulti(t *testing.T) {
 			fmt.Println(locker.Metadata())
 			if firstData1 == "" {
 				firstData1 = strconv.Itoa(rand.Int())
-				other.Set(context.Background(), "firstData1", firstData1, 0)
+				commonClient.Set(context.Background(), "firstData1", firstData1, 0)
 			} else {
-				value, err := other.Get(context.Background(), "firstData1").Result()
+				value, err := commonClient.Get(context.Background(), "firstData1").Result()
 				assert.NoError(t, err)
 				assert.Equal(t, value, firstData1)
 			}
@@ -108,7 +104,7 @@ func TestMulti(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			lock := fmt.Sprintf(lockKeyFormat, 2)
-			locker, err := ExponentialBackoffObtain(context.Background(), lock, 30*time.Second, "wo is mateData")
+			locker, err := lockClient.ExponentialBackoffObtain(context.Background(), lock, 30*time.Second, "wo is mateData")
 			assert.NoError(t, err)
 			defer func() {
 				err := locker.Release(context.Background())
@@ -117,9 +113,9 @@ func TestMulti(t *testing.T) {
 			fmt.Println(locker.Metadata())
 			if firstData2 == "" {
 				firstData2 = strconv.Itoa(rand.Int())
-				other.Set(context.Background(), "firstData2", firstData2, 0)
+				commonClient.Set(context.Background(), "firstData2", firstData2, 0)
 			} else {
-				value, err := other.Get(context.Background(), "firstData2").Result()
+				value, err := commonClient.Get(context.Background(), "firstData2").Result()
 				assert.NoError(t, err)
 				assert.Equal(t, value, firstData2)
 			}
