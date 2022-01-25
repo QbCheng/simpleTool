@@ -69,11 +69,11 @@ func NewSimpleZapLogger(options ...Option) *SimpleZapLogger {
 func (s *SimpleZapLogger) monoFile() {
 
 	hook := lumberjack.Logger{
-		Filename:   s.LoggerFileLogPath,    // 日志文件路径
-		MaxSize:    s.LoggerFileMaxSize,    // 文件大小限制,单位MB, 默认 256MB
-		MaxAge:     s.LoggerFileMaxAge,     // 日志文件保留天数
-		MaxBackups: s.LoggerFileMaxBackups, // 最大保留日志文件数量
-		Compress:   s.LoggerFileCompress,   // 是否压缩处理
+		Filename:   s.LoggerFileLogPath + ".log", // 日志文件路径
+		MaxSize:    s.LoggerFileMaxSize,          // 文件大小限制,单位MB, 默认 256MB
+		MaxAge:     s.LoggerFileMaxAge,           // 日志文件保留天数
+		MaxBackups: s.LoggerFileMaxBackups,       // 最大保留日志文件数量
+		Compress:   s.LoggerFileCompress,         // 是否压缩处理
 		LocalTime:  true,
 	}
 
