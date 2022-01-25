@@ -31,7 +31,6 @@ var TestConfig = config.RedisConf{
 }
 
 func TestSingle(t *testing.T) {
-
 	commonClient, err := NewRedisMng(&TestConfig, WithOpenRedisLockClient(false))
 	assert.NoError(t, err)
 
