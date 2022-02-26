@@ -1,5 +1,7 @@
 package logger
 
+import "strings"
+
 type Option func(*SimpleZapLogger)
 
 // WithLoggerFileMaxSize 日志文件最大大小
@@ -30,10 +32,20 @@ func WithLoggerFileCompress(LoggerFileCompress bool) Option {
 	}
 }
 
-// WithLoggerFileLogPath 日志文件路径. 默认 ./test
-func WithLoggerFileLogPath(LoggerFileLogPath string) Option {
+// WithLoggerFileLogDir 日志文件路径. 默认 ./test
+func WithLoggerFileLogDir(LoggerFileLogDir string) Option {
 	return func(sz *SimpleZapLogger) {
-		sz.LoggerFileLogPath = LoggerFileLogPath
+		if !strings.HasSuffix(LoggerFileLogDir, "/") {
+			LoggerFileLogDir = LoggerFileLogDir + "/"
+		}
+		sz.LoggerFileLogDir = LoggerFileLogDir
+	}
+}
+
+// WithLoggerFileLogName 日志文件名. 默认 ./logger.log
+func WithLoggerFileLogName(LoggerFileLogName string) Option {
+	return func(sz *SimpleZapLogger) {
+		sz.LoggerFileLogName = LoggerFileLogName
 	}
 }
 

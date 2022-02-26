@@ -13,7 +13,8 @@ type SimpleZapLoggerOption struct {
 	LoggerFileMaxBackups int  `json:"logger_file_max_backups" yaml:"logger_file_max_backups"`
 	LoggerFileCompress   bool `json:"logger_file_compress" yaml:"logger_file_compress"`
 
-	LoggerFileLogPath     string `json:"logger_file_log_path" yaml:"logger_file_log_path"`
+	LoggerFileLogDir      string `json:"logger_file_log_dir" yaml:"logger_file_log_dir"`
+	LoggerFileLogName     string `json:"logger_file_log_name" yaml:"logger_file_log_name"`
 	LoggerFileMinLogLevel string `json:"logger_file_min_log_level" yaml:"logger_file_min_log_level"`
 	LoggerFileStdoutFlag  bool   `json:"logger_file_stdout_flag" yaml:"logger_file_stdout_flag"`
 	LoggerFileCallDepth   int    `json:"logger_file_call_depth" yaml:"logger_file_call_depth"`
@@ -28,15 +29,16 @@ type SimpleZapLogger struct {
 }
 
 const (
-	defaultLoggerFileMaxSize     = 256      // 默认 文件大小限制 256 MB
-	defaultLoggerFileMaxAge      = 30       // 默认 日志文件保留天数 30天
-	defaultLoggerFileMaxBackups  = 200      // 默认 最大保留日志文件数量 200
-	defaultLoggerFileCompress    = false    // 默认 是否压缩处理 不压缩
-	defaultLoggerFileLogPath     = "./test" // 默认 当前地址
-	defaultLoggerFileMinLogLevel = "debug"  // 默认 当前地址
-	defaultLoggerFileStdoutFlag  = true     // 默认 同步输出到控制台
-	defaultLoggerFileCallDepth   = 0        //默认 调用层级
-	defaultLoggerFileMonoFile    = true     //默认 默认是单文件. 所有日志等级文件均在一个文件中
+	defaultLoggerFileMaxSize     = 256          // 默认 文件大小限制 256 MB
+	defaultLoggerFileMaxAge      = 30           // 默认 日志文件保留天数 30天
+	defaultLoggerFileMaxBackups  = 200          // 默认 最大保留日志文件数量 200
+	defaultLoggerFileCompress    = false        // 默认 是否压缩处理 不压缩
+	defaultLoggerFileLogDir      = "./log/"     // 默认 当前地址
+	defaultLoggerFileLogName     = "logger.log" // 默认 当前地址
+	defaultLoggerFileMinLogLevel = "debug"      // 默认 当前地址
+	defaultLoggerFileStdoutFlag  = true         // 默认 同步输出到控制台
+	defaultLoggerFileCallDepth   = 0            //默认 调用层级
+	defaultLoggerFileMonoFile    = true         //默认 默认是单文件. 所有日志等级文件均在一个文件中
 )
 
 func NewSimpleZapLogger(options ...Option) *SimpleZapLogger {
@@ -47,7 +49,8 @@ func NewSimpleZapLogger(options ...Option) *SimpleZapLogger {
 			LoggerFileMaxAge:      defaultLoggerFileMaxAge,
 			LoggerFileMaxBackups:  defaultLoggerFileMaxBackups,
 			LoggerFileCompress:    defaultLoggerFileCompress,
-			LoggerFileLogPath:     defaultLoggerFileLogPath,
+			LoggerFileLogDir:      defaultLoggerFileLogDir,
+			LoggerFileLogName:     defaultLoggerFileLogName,
 			LoggerFileMinLogLevel: defaultLoggerFileMinLogLevel,
 			LoggerFileStdoutFlag:  defaultLoggerFileStdoutFlag,
 			LoggerFileCallDepth:   defaultLoggerFileCallDepth,
@@ -66,14 +69,18 @@ func NewSimpleZapLogger(options ...Option) *SimpleZapLogger {
 	return ret
 }
 
+func (s *SimpleZapLogger) Close() error {
+	return s.Sync()
+}
+
 func (s *SimpleZapLogger) monoFile() {
 
 	hook := lumberjack.Logger{
-		Filename:   s.LoggerFileLogPath + ".log", // 日志文件路径
-		MaxSize:    s.LoggerFileMaxSize,          // 文件大小限制,单位MB, 默认 256MB
-		MaxAge:     s.LoggerFileMaxAge,           // 日志文件保留天数
-		MaxBackups: s.LoggerFileMaxBackups,       // 最大保留日志文件数量
-		Compress:   s.LoggerFileCompress,         // 是否压缩处理
+		Filename:   s.LoggerFileLogDir + s.LoggerFileLogName, // 日志文件路径
+		MaxSize:    s.LoggerFileMaxSize,                      // 文件大小限制,单位MB, 默认 256MB
+		MaxAge:     s.LoggerFileMaxAge,                       // 日志文件保留天数
+		MaxBackups: s.LoggerFileMaxBackups,                   // 最大保留日志文件数量
+		Compress:   s.LoggerFileCompress,                     // 是否压缩处理
 		LocalTime:  true,
 	}
 
@@ -123,7 +130,7 @@ func (s *SimpleZapLogger) multiFile() {
 		if minLevel > curLevel {
 			continue
 		}
-		coreList = append(coreList, s.ZapCore(LogLevels[i]))
+		coreList = append(coreList, s.zapCore(LogLevels[i]))
 	}
 
 	core := zapcore.NewTee(coreList...)
@@ -137,8 +144,8 @@ func (s *SimpleZapLogger) multiFile() {
 	s.Logger = zap.New(core, caller, skip, development)
 }
 
-func (s *SimpleZapLogger) ZapCore(level string) zapcore.Core {
-	path := s.LoggerFileLogPath + "." + level + ".log"
+func (s *SimpleZapLogger) zapCore(level string) zapcore.Core {
+	path := s.LoggerFileLogDir + s.LoggerFileLogName + "." + level
 	hook := lumberjack.Logger{
 		Filename:   path,                   // 日志文件路径
 		MaxSize:    s.LoggerFileMaxSize,    // 文件大小限制,单位MB, 默认 256MB
