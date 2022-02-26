@@ -1,4 +1,4 @@
-package tcpserver
+package tcpServer
 
 import (
 	"encoding/binary"

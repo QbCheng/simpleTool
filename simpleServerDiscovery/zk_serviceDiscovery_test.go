@@ -1,4 +1,4 @@
-package serviceDiscovery
+package simpleServerDiscovery
 
 import (
 	"fmt"

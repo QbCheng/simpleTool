@@ -1,4 +1,4 @@
-package logger
+package simpleZap
 
 import (
 	"go.uber.org/zap"

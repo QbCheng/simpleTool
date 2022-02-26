@@ -1,10 +1,10 @@
-package tcpserver
+package tcpServer
 
 //
 //import (
 //	"fmt"
 //	"net"
-//	"simpleTool/simpleLogger"
+//	"github.com/QbCheng/simpleTool/simpleLogger"
 //	"sync"
 //	"testing"
 //	"time"

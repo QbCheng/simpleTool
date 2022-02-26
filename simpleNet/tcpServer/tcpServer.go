@@ -1,13 +1,13 @@
-package tcpserver
+package tcpServer
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/QbCheng/simpleTool/simpleLogger"
 	"io"
 	"log"
 	"net"
-	"simpleTool/simpleLogger"
 	"strconv"
 	"sync"
 	"time"

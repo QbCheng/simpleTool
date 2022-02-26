@@ -1,8 +1,8 @@
-package serviceDiscovery
+package simpleServerDiscovery
 
 import (
+	"github.com/QbCheng/simpleTool/simpleLogger"
 	"log"
-	"simpleTool/simpleLogger"
 )
 
 type ServerDiscoveryLogger struct {

@@ -1,4 +1,4 @@
-package simpleUniversalClient
+package simpleRedis
 
 import (
 	"context"

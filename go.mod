@@ -5,8 +5,10 @@ go 1.16
 require (
 	github.com/Shopify/sarama v1.31.0
 	github.com/anthonynsimon/bild v0.13.0
+	github.com/appleboy/gin-jwt/v2 v2.8.0
 	github.com/brianvoe/gofakeit/v6 v6.11.0
 	github.com/bsm/redislock v0.7.2
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/jinzhu/now v1.1.4 // indirect
@@ -24,4 +26,5 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gorm.io/driver/mysql v1.2.2
 	gorm.io/gorm v1.22.4
+
 )

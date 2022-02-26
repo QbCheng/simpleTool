@@ -1,4 +1,4 @@
-package serviceDiscovery
+package simpleServerDiscovery
 
 type EventType int
 

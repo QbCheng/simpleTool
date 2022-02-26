@@ -3,7 +3,8 @@ package simpleConfig
 import "github.com/spf13/viper"
 
 /*
-非并发安全
+SimpleConfig
+注意: 非并发安全
 */
 type SimpleConfig struct {
 	*viper.Viper

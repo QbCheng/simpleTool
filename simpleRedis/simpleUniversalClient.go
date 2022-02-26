@@ -1,11 +1,11 @@
-package simpleUniversalClient
+package simpleRedis
 
 import (
 	"context"
 	"errors"
+	"github.com/QbCheng/simpleTool/simpleRedis/config"
 	"github.com/bsm/redislock"
 	"github.com/go-redis/redis/v8"
-	"simpleTool/simpleRedis/config"
 )
 
 var (

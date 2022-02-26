@@ -1,11 +1,11 @@
-package simpleUniversalClient
+package simpleRedis
 
 import (
 	"context"
 	"fmt"
+	"github.com/QbCheng/simpleTool/simpleRedis/config"
 	"github.com/stretchr/testify/assert"
 	"math/rand"
-	"simpleTool/simpleRedis/config"
 	"strconv"
 	"sync"
 	"testing"
