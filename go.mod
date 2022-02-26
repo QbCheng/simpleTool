@@ -1,4 +1,4 @@
-module simpleTool
+module github.com/QbCheng/simpleTool
 
 go 1.16
 
