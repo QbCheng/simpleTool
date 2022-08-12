@@ -1,10 +1,10 @@
 package core
 
 import (
-	"github.com/QbCheng/simpleTool/simpleGorm/customLogger"
 	mysql2 "github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"simpleTool/simpleGorm/customLogger"
 	"sync"
 	"time"
 )

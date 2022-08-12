@@ -1,8 +1,8 @@
 package simpleConfig
 
 import (
-	"github.com/QbCheng/simpleTool/simpleConfig/model"
 	"github.com/stretchr/testify/assert"
+	"simpleTool/simpleConfig/model"
 	"testing"
 )
 

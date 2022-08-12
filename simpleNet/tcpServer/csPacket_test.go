@@ -1,4 +1,4 @@
-package tcpServer
+package tcpserver
 
 import (
 	"github.com/stretchr/testify/assert"

@@ -1,4 +1,4 @@
-package simpleServerDiscovery
+package serviceDiscovery
 
 type endpointType int
 

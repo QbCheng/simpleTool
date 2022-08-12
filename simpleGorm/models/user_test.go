@@ -1,9 +1,9 @@
 package models
 
 import (
-	"github.com/QbCheng/simpleTool/simpleGorm/core"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
+	"simpleTool/simpleGorm/core"
 	"testing"
 )
 

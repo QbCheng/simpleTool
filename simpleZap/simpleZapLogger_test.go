@@ -1,4 +1,4 @@
-package simpleZap
+package logger
 
 import (
 	"github.com/stretchr/testify/assert"

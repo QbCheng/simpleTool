@@ -1,8 +1,8 @@
 package core
 
 import (
-	"github.com/QbCheng/simpleTool/simpleGorm/models"
 	"github.com/stretchr/testify/assert"
+	"simpleTool/simpleGorm/models"
 	"testing"
 )
 
